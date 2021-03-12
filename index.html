@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script>
+        window.addEventListener("message", function (messageEvent) {
+            if (event.origin !== "https://my.extole.com") {
+                return;
+            }
+
+            if (event.data.name === "core_uri") {
+                var script = document.createElement("script");
+                script.src = event.data.core_uri;
+                document.head.appendChild(script);
+                script.addEventListener("load", function (loadEvent) {
+                    messageEvent.source.postMessage({
+                        name: "core_loaded"
+                    });
+                });
+            } else if (event.data.name === "zone_definition") {
+                window.extole && window.extole.createZone(event.data.zone_definition);
+            }
+        });
+    </script>
 </head>
 <body>
 </body>
