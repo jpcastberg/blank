@@ -4,6 +4,7 @@
     <script>
         window.addEventListener("message", function (messageEvent) {
             debugger;
+            document.body.innerText = "message_received"
             if (event.origin !== "https://my.extole.com") {
                 return;
             }
