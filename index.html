@@ -91,20 +91,30 @@
 
     // wait for layout so we can measure card size
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      const W = () => window.innerWidth;
-      const H = () => window.innerHeight;
-      const cw = () => card.offsetWidth;
-      const ch = () => card.offsetHeight;
+      const cardW = card.offsetWidth;
+      const cardH = card.offsetHeight;
+
+      // Cache viewport size — do NOT read window.innerHeight every frame.
+      // On iOS Safari the toolbar causes innerHeight to fluctuate mid-animation,
+      // making the card appear "out of bounds" and triggering spurious color changes.
+      let vpW = window.innerWidth;
+      let vpH = window.innerHeight;
+      window.addEventListener('resize', () => {
+        vpW = window.innerWidth;
+        vpH = window.innerHeight;
+        x = Math.max(0, Math.min(x, vpW - cardW));
+        y = Math.max(0, Math.min(y, vpH - cardH));
+      });
 
       const SPEED = 0.6; // px per frame ~36px/s at 60fps
-      let x = Math.random() * (W() - cw());
-      let y = Math.random() * (H() - ch());
+      let x = Math.random() * Math.max(0, vpW - cardW);
+      let y = Math.random() * Math.max(0, vpH - cardH);
       let dx = SPEED * (Math.random() < 0.5 ? 1 : -1);
       let dy = SPEED * (Math.random() < 0.5 ? 1 : -1);
 
       function bounce() {
-        const maxX = W() - cw();
-        const maxY = H() - ch();
+        const maxX = vpW - cardW;
+        const maxY = vpH - cardH;
         let bounced = false;
 
         x += dx;
