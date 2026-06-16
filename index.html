@@ -8,49 +8,50 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #0f0f13;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #0a0a0f;
       font-family: 'Segoe UI', system-ui, sans-serif;
-      color: #e8e8f0;
     }
 
     .card {
+      position: absolute;
       text-align: center;
-      padding: 3rem 4rem;
+      padding: 2.5rem 3.5rem;
       background: #1a1a24;
       border: 1px solid #2e2e40;
       border-radius: 16px;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+      will-change: transform;
     }
 
     .greeting {
-      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-size: clamp(2rem, 6vw, 4rem);
       font-weight: 700;
       letter-spacing: -0.03em;
-      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      background: linear-gradient(135deg, var(--c1), var(--c2));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       line-height: 1.1;
+      transition: --c1 0.6s, --c2 0.6s;
     }
 
     .subtitle {
-      margin-top: 1rem;
-      font-size: 1.1rem;
+      margin-top: 0.75rem;
+      font-size: 1rem;
       color: #6b7280;
       letter-spacing: 0.05em;
     }
 
     .dot {
       display: inline-block;
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       background: #34d399;
       border-radius: 50%;
-      margin-right: 0.5rem;
+      margin-right: 0.45rem;
       animation: pulse 2s ease-in-out infinite;
     }
 
@@ -61,9 +62,73 @@
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1 class="greeting">Hello, World!</h1>
+  <div class="card" id="card">
+    <h1 class="greeting" id="greeting">Hello, World!</h1>
     <p class="subtitle"><span class="dot"></span>Running on GitHub Pages</p>
   </div>
+
+  <script>
+    const palettes = [
+      ['#a78bfa', '#60a5fa'],
+      ['#f472b6', '#fb923c'],
+      ['#34d399', '#60a5fa'],
+      ['#fbbf24', '#f472b6'],
+      ['#60a5fa', '#34d399'],
+      ['#c084fc', '#f472b6'],
+      ['#fb923c', '#fbbf24'],
+      ['#38bdf8', '#a78bfa'],
+    ];
+
+    const card = document.getElementById('card');
+    const greeting = document.getElementById('greeting');
+
+    let paletteIdx = 0;
+    function applyPalette(idx) {
+      const [c1, c2] = palettes[idx];
+      greeting.style.setProperty('--c1', c1);
+      greeting.style.setProperty('--c2', c2);
+      card.style.boxShadow = `0 16px 48px ${c1}22`;
+      card.style.borderColor = `${c1}44`;
+    }
+    applyPalette(0);
+
+    // wait for layout so we can measure card size
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const W = () => window.innerWidth;
+      const H = () => window.innerHeight;
+      const cw = () => card.offsetWidth;
+      const ch = () => card.offsetHeight;
+
+      const SPEED = 1.4; // px per frame ~84px/s at 60fps
+      let x = Math.random() * (W() - cw());
+      let y = Math.random() * (H() - ch());
+      let dx = SPEED * (Math.random() < 0.5 ? 1 : -1);
+      let dy = SPEED * (Math.random() < 0.5 ? 1 : -1);
+
+      function bounce() {
+        const maxX = W() - cw();
+        const maxY = H() - ch();
+        let bounced = false;
+
+        x += dx;
+        y += dy;
+
+        if (x <= 0)      { x = 0;    dx = Math.abs(dx);  bounced = true; }
+        if (x >= maxX)   { x = maxX; dx = -Math.abs(dx); bounced = true; }
+        if (y <= 0)      { y = 0;    dy = Math.abs(dy);  bounced = true; }
+        if (y >= maxY)   { y = maxY; dy = -Math.abs(dy); bounced = true; }
+
+        if (bounced) {
+          paletteIdx = (paletteIdx + 1) % palettes.length;
+          applyPalette(paletteIdx);
+        }
+
+        card.style.transform = `translate(${x}px, ${y}px)`;
+        requestAnimationFrame(bounce);
+      }
+
+      requestAnimationFrame(bounce);
+    }));
+  </script>
 </body>
 </html>
